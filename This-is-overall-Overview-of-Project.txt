@@ -1,0 +1,51 @@
+Project 1 (Recommended): Smart Placement Management System
+Uses Java + SQL
+Covers OOP, DBMS, DSA
+Easy to explain
+Looks professional
+Features
+Student Module
+Registration
+Login
+Profile Creation
+Resume Upload
+Skills Management
+Admin Module
+Add Companies
+Eligibility Criteria
+Student Shortlisting
+Placement Module
+Company Applications
+Interview Scheduling
+Selection Tracking
+Analytics
+Placement Statistics
+Department-wise Reports
+Tech Stack
+Java
+JDBC
+MySQL
+Collections Framework
+OOP
+Advanced Feature
+
+Use sorting and filtering algorithms to shortlist students.
+
+i am done with 
+Authentication          ✅ 100%
+Student Module          ✅ 100%
+Resume Module           ✅ 100%
+Company Module          ✅ 100%
+Job Module              ✅ 100%
+Eligibility Module      ✅ 100%
+Skills Module           ✅ 100%
+
+Application Module     	✅ 100%
+
+Shortlisting Module     ✅ 100%
+
+Interview Scheduling    ✅ 100%
+
+Selection Tracking      ✅ 100%
+
+Analytics & Reports     ✅ 100%
