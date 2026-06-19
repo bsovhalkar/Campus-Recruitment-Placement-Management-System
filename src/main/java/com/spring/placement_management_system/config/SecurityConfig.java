@@ -10,6 +10,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,24 +27,46 @@ public class SecurityConfig {
 
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                 JwtAuthenticationFilter jwtAuthFilter)
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            JwtAuthenticationFilter jwtAuthFilter)
             throws Exception {
 
         http
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .cors(Customizer.withDefaults())
+                .csrf(AbstractHttpConfigurer::disable)
+
+                .sessionManagement(sm ->
+                        sm.sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS))
+
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/**").hasRole("STUDENT")
-                        .anyRequest().authenticated()
+
+                        .requestMatchers(
+                                HttpMethod.OPTIONS,
+                                "/**")
+                        .permitAll()
+
+                        .requestMatchers("/api/auth/**")
+                        .permitAll()
+
+                        .requestMatchers("/api/admin/**")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers("/api/**")
+                        .hasRole("STUDENT")
+
+                        .anyRequest()
+                        .authenticated()
                 )
-                .exceptionHandling(ex -> ex
-                        .accessDeniedHandler(accessDeniedHandler)
-                )
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .httpBasic(Customizer.withDefaults());
+
+                .exceptionHandling(ex ->
+                        ex.accessDeniedHandler(
+                                accessDeniedHandler))
+
+                .addFilterBefore(
+                        jwtAuthFilter,
+                        UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

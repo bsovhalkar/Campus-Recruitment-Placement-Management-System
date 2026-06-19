@@ -193,4 +193,15 @@ public class StudentController {
         );
 
     }
+    @GetMapping("/have-student-profile")
+    public ResponseEntity<ApiResponse> getHaveStudentProfile() {
+        boolean is = studentService.doIHaveStudentProfile();
+        return ResponseEntity.ok(
+                new ApiResponse(
+                        true,
+                        "Have student profile fetched successfully",
+                        is
+                )
+        );
+    }
 }

@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -81,7 +82,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             throw new ApplicationException("Application deadline exceeded");
         }
 
-        if (!eligibilityService.isEligible(
+        if (!eligibilityService.isEligible2(
                 student.getStudentId(),
                 jobId)) {
             throw new ApplicationException("Not eligible for this job");
@@ -177,7 +178,11 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     public ApplicationResponse getApplicationById(Long applicationId) {
         CurrentUser  currentUser = userService.getCurrentUser();
+        Student student = studentRepository.findByUserUserId(currentUser.getUserId()).orElseThrow(() -> new ApplicationException("Student not found"));
         Application application = applicationRepository.findById(applicationId).orElseThrow(()->new ApplicationException("Application not found"));
+        if(!Objects.equals(application.getStudent().getStudentId(), student.getStudentId())) {
+            throw new ApplicationException("Not authorized");
+        }
         return applicationMapper.mapToResponse(application);
     }
 

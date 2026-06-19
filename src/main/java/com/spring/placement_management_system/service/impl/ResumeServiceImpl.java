@@ -174,18 +174,20 @@ public class ResumeServiceImpl
     public void deleteMyResume() {
         CurrentUser user = userService.getCurrentUser();
         Student student = studentRepository.findByUserUserId(user.getUserId()).orElseThrow(() -> new UserException("Student not found"));
-        Resume resume = resumeRepository.findByStudentStudentId(student.getStudentId()).orElseThrow(() -> new RuntimeException("Resume not found"));
+        Resume resume = resumeRepository.findByStudentStudentId(student.getStudentId()).orElseThrow(() -> new ResumeException("Resume not found"));
         resumeRepository.delete(resume);
     }
 
     @Override
     public String status() {
-        CurrentUser currentUser =  userService.getCurrentUser();
-        Student student = studentRepository.findById(currentUser.getUserId()).orElseThrow(() ->  new UserException("Student not found"));
-        if(resumeRepository.existsByStudentStudentId(student.getStudentId())){
-            return "Resume uploaded";
+        CurrentUser  currentUser = userService.getCurrentUser();
+        Student student = studentRepository.findByUserUserId(currentUser.getUserId()).orElseThrow(() -> new UserException("Student not found"));
+        Resume resume = resumeRepository.findByStudentStudentId(student.getStudentId())
+                .orElse(null);
+        if(resume == null){
+            return "Resume not found";
         }
-        return "No resume uploaded";
+        return "Resume uploaded";
 
     }
 }

@@ -5,12 +5,13 @@ import com.spring.placement_management_system.constant.AssessmentType;
 //import com.spring.placement_management_system.constant.PlacementStatus;
 import com.spring.placement_management_system.constant.StatusConstants;
 import com.spring.placement_management_system.dto.CurrentUser;
+import com.spring.placement_management_system.dto.StudentDTO;
 import com.spring.placement_management_system.dto.mapper.AssessmentMapper;
+import com.spring.placement_management_system.dto.mapper.StudentMapper;
+import com.spring.placement_management_system.dto.mapper.assessment__student__mapper;
 import com.spring.placement_management_system.dto.request.ScheduleAssessmentRequestDTO;
 import com.spring.placement_management_system.dto.request.UploadScoreRequestDTO;
-import com.spring.placement_management_system.dto.response.AssessmentAdminResponseDTO;
-import com.spring.placement_management_system.dto.response.AssessmentDashboardDTO;
-import com.spring.placement_management_system.dto.response.AssessmentResponseDTO;
+import com.spring.placement_management_system.dto.response.*;
 import com.spring.placement_management_system.entity.*;
 import com.spring.placement_management_system.exception.ApplicationException;
 import com.spring.placement_management_system.exception.AssessmentException;
@@ -19,10 +20,18 @@ import com.spring.placement_management_system.exception.UserException;
 import com.spring.placement_management_system.repository.*;
 import com.spring.placement_management_system.service.AssessmentService;
 import com.spring.placement_management_system.service.UserService;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ByteArrayResource;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -48,6 +57,7 @@ public class AssessmentServiceImpl implements AssessmentService {
             assessmentMapper;
     private final UserService  userService;
     private final StudentRepository studentRepository;
+    private final assessment__student__mapper assessment_student_mapper;
 
     @Override
     public AssessmentAdminResponseDTO scheduleAssessment(
@@ -401,6 +411,72 @@ public class AssessmentServiceImpl implements AssessmentService {
                 .toList();
     }
 
+    @Override
+    public List<AssessmentStudentDTO> getStudentsByAssessmentId(Long assessmentId) {
+        return assessmentStudentRepository
+                .findByAssessmentAssessmentId(assessmentId)
+                .stream()
+                .map(assessment_student_mapper::toDTO)
+                .toList();
+    }
+
+    @Override
+    public void uploadScoresCsv(
+            Long assessmentId,
+            MultipartFile file
+    ) throws IOException {
+
+        List<UploadScoreRequestDTO> scores =
+                new ArrayList<>();
+
+        BufferedReader reader =
+                new BufferedReader(
+                        new InputStreamReader(
+                                file.getInputStream()
+                        )
+                );
+
+        String line;
+
+        boolean firstRow = true;
+
+        while ((line = reader.readLine()) != null) {
+
+            if (firstRow) {
+                firstRow = false;
+                continue;
+            }
+
+            String[] data = line.split(",");
+
+            if (data.length < 2) {
+                continue;
+            }
+
+            UploadScoreRequestDTO dto =
+                    new UploadScoreRequestDTO();
+
+            dto.setStudentId(
+                    Long.parseLong(
+                            data[0].trim()
+                    )
+            );
+
+            dto.setScore(
+                    Double.parseDouble(
+                            data[data.length - 1]
+                                    .trim()
+                    )
+            );
+
+            scores.add(dto);
+        }
+
+        uploadScores(
+                assessmentId,
+                scores
+        );
+    }
 
     private void generateRanking(
             Assessment assessment) {
@@ -577,5 +653,52 @@ public class AssessmentServiceImpl implements AssessmentService {
 
         application.setStatus(
                 status);
+    }
+
+    @Override
+    public Resource downloadTemplate(
+            Long assessmentId
+    ) throws IOException {
+
+        List<AssessmentStudentDTO> students =
+                getStudentsByAssessmentId(
+                        assessmentId
+                );
+
+        StringWriter writer =
+                new StringWriter();
+
+        writer.append(
+                "studentId,studentName,score\n"
+        );
+
+        for (
+                AssessmentStudentDTO student
+                : students
+        ) {
+
+            writer.append(
+                    String.valueOf(
+                            student.getStudentId()
+                    )
+            );
+
+            writer.append(",");
+
+            writer.append(
+                    student.getStudentName()
+            );
+
+            writer.append(",");
+
+            writer.append("\n");
+        }
+
+        return new ByteArrayResource(
+                writer.toString()
+                        .getBytes(
+                                StandardCharsets.UTF_8
+                        )
+        );
     }
 }

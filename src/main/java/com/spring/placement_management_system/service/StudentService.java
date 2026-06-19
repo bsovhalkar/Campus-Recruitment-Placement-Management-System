@@ -30,4 +30,5 @@ public interface StudentService {
     ProfileCompletionResponse isMyProfileCompleted();
     List<StudentDTO> bulkUpdateStudents(
             List<BulkStudentRequest> requests);
+    Boolean doIHaveStudentProfile();
 }

@@ -143,7 +143,7 @@ public class JobServiceImpl implements JobService {
         List<Job> jobs = jobRepository.findByApplicationDeadlineGreaterThanEqual(LocalDate.now());
         List<Job> ans = new ArrayList<>();
         for (Job job : jobs) {
-            if(eligibilityService.isEligible(student.getStudentId(),job.getJobId())){
+            if(eligibilityService.isEligible2(student.getStudentId(),job.getJobId())){
                 ans.add(job);
             }
         }

@@ -23,6 +23,45 @@ public class EligibilityServiceImpl
     private final UserService userService;
     @Override
     public boolean isEligible(
+            Long jobId) {
+        CurrentUser currentUser = userService.getCurrentUser();
+
+        Student student = studentRepository.findByUserUserId(currentUser.getUserId())
+                .orElseThrow(() ->
+                        new UserException("Student not found"));
+
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() ->
+                        new JobException("Job not found"));
+
+        if (student.getCgpa() < job.getMinimumCgpa()) {
+            return false;
+        }
+
+        if (!student.getGraduationYear()
+                .equals(job.getPassingYear())) {
+            return false;
+        }
+
+        if (!job.getEligibleDepartments()
+                .contains(student.getDepartment())) {
+            return false;
+        }
+
+        if (!job.getBacklogAllowed()
+                && student.getActiveBacklogs() > 0) {
+            return false;
+        }
+
+        if(job.getBacklogAllowed() && student.getActiveBacklogs() > 0) {
+            if(student.getActiveBacklogs() > job.getBacklogAllowedCount()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+    public boolean isEligible2(
             Long studentId,
             Long jobId) {
         Student student = studentRepository.findById(studentId)

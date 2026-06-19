@@ -14,20 +14,19 @@ public class EligibilityController {
 
     private final EligibilityService eligibilityService;
 
-    @GetMapping("/jobs/{jobId}/eligibility/{studentId}")
+    @GetMapping("/jobs/{jobId}/eligibility")
     public ResponseEntity<ApiResponse> checkEligibility(
-            @PathVariable Long jobId,
-            @PathVariable Long studentId) {
+            @PathVariable Long jobId) {
 
         boolean eligible =
-                eligibilityService.isEligible(studentId, jobId);
+                eligibilityService.isEligible(jobId);
 
         return ResponseEntity.ok(
                 new ApiResponse(
                         true,
                         eligible
-                                ? "Student is eligible"
-                                : "Student is not eligible",
+                                ? "You are eligible"
+                                : "You are not eligible",
                         eligible
                 )
         );

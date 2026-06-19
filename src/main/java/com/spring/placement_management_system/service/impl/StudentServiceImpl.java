@@ -183,7 +183,7 @@ public class StudentServiceImpl
         }
 
         User user = student.getUser();
-        user.setStatus("DELETED");
+        user.setStatus("INACTIVE");
         userRepository.save(user);
 
     }
@@ -270,6 +270,16 @@ public class StudentServiceImpl
         return updatedStudents.stream()
                 .map(studentMapper::toDTO)
                 .toList();
+    }
+
+    @Override
+    public Boolean doIHaveStudentProfile() {
+        CurrentUser currentUser = userService.getCurrentUser();
+
+        Optional<Student> studentOptional =
+                studentRepository.findByUserUserId(currentUser.getUserId());
+
+        return studentOptional.isPresent();
     }
 
     public MyProfileResponse getMyProfile() {
@@ -394,4 +404,5 @@ public class StudentServiceImpl
         return isProfileCompleted(student.getStudentId());
 
     }
+
 }
